@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TekniTeed Sales Operations Suite</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --card-bg: #1e1e1e;
+      --card-border: #333333;
+      --text: #ffffff;
+      --text-muted: #a3a3a3;
+      --accent: #f97316; /* TekniTeed Orange */
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.15);
+      --yellow: #f59e0b;
+      --yellow-bg: rgba(245, 158, 11, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 120px; }
+
+    /* TekniTeed Branded Header */
+    header { position: sticky; top: 0; background: #000000; padding: 12px 16px; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; z-index: 90; }
+    .brand-container { display: flex; align-items: center; gap: 10px; }
+    .logo-mark { width: 26px; height: 26px; border: 3px solid var(--accent); border-radius: 50%; border-left-color: transparent; border-bottom-color: transparent; transform: rotate(45deg); }
+    .brand-text h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px; color: #fff; line-height: 1; }
+    .brand-text span { font-size: 0.55rem; color: #aaa; font-style: italic; display: block; margin-top: 2px; }
+    .status-badge { font-size: 0.75rem; background: var(--red-bg); color: var(--red); border: 1px solid var(--red); padding: 3px 8px; border-radius: 999px; font-weight: 600; }
+
+    #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; z-index: 200; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
+
+    .module-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px; background: #1a1a1a; border-bottom: 1px solid var(--card-border); white-space: nowrap; -webkit-overflow-scrolling: touch; }
+    .module-tab-btn { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+    .module-tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .view-content { display: none; padding: 14px; }
+    .view-content.active { display: block; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .card-title { font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    input, select, textarea { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 6px; border: 1px solid #444; background: #121212; color: #fff; font-size: 0.95rem; }
+    textarea { min-height: 70px; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+
+    .btn { width: 100%; min-height: 46px; background: var(--accent); color: #fff; border: none; padding: 12px; border-radius: 6px; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-action { background: #2a2a2a; color: #fff; border: 1px solid #444; padding: 10px 14px; min-height: 38px; font-size: 0.78rem; font-weight: 600; border-radius: 6px; cursor: pointer; margin-right: 6px; margin-top: 6px; }
+    .btn-mail { background: #0284c7; border-color: #0284c7; }
+    .btn-excel { background: #059669; }
+
+    .pill { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+    .pill-red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+    .pill-yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+    .pill-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+    .pill-blue { background: rgba(249, 115, 22, 0.15); color: var(--accent); border: 1px solid var(--accent); }
+
+    .table-container { overflow-x: auto; margin-top: 10px; border-radius: 6px; border: 1px solid var(--card-border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; }
+    th, td { padding: 8px 10px; border: 1px solid var(--card-border); white-space: nowrap; }
+    th { background: #222; color: var(--accent); font-weight: 700; }
+    tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+    nav { position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: #000; border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+    .nav-btn { background: transparent; border: none; color: var(--text-muted); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 3px; font-weight: 600; cursor: pointer; width: 20%; height: 100%; justify-content: center; }
+    .nav-btn.active { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-container">
+      <div class="logo-mark"></div>
+      <div class="brand-text">
+        <h1>TekniTeed Group</h1>
+        <span>...Keeping the wheels of industry moving</span>
+      </div>
+    </div>
+    <span class="status-badge" id="headerAlerts">0 Alerts</span>
+  </header>
+
+  <div id="toast">Saved Successfully</div>
+
+  <div class="module-tabs">
+    <button class="module-tab-btn active" data-sheet="sheet1" onclick="switchView('sheet1')">📊 Sheet 1: Monthly Report</button>
+    <button class="module-tab-btn" data-sheet="sheet2" onclick="switchView('sheet2')">📝 Sheet 2: Quotes</button>
+    <button class="module-tab-btn" data-sheet="sheet3" onclick="switchView('sheet3')">🚗 Sheet 3: Visits</button>
+    <button class="module-tab-btn" data-sheet="sheet4" onclick="switchView('sheet4')">📦 Sheet 4: Orders</button>
+    <button class="module-tab-btn" data-sheet="sheet5" onclick="switchView('sheet5')">⚠️ Sheet 5: Challenges</button>
+    <button class="module-tab-btn" data-sheet="sheet6" onclick="switchView('sheet6')">🏢 Sheet 6: Accounts</button>
+  </div>
+
+  <!-- SHEET 1: SALES REPORT -->
+  <div id="view-sheet1" class="view-content active">
+    <div class="card">
+      <div class="card-title">
+        <span>Monthly Sales Matrix</span>
+        <select id="reportMonth" style="width: auto; min-height: 36px; padding: 4px 8px; font-size: 0.75rem;" onchange="handleMonthChange()"></select>
+      </div>
+
+      <div style="margin: 12px 0; padding: 12px; background: #111; border-radius: 6px; border: 1px solid var(--card-border);">
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent);">Direct Daily Counters (Today)</span>
+        <div class="grid-2" style="margin-top: 8px;">
+          <div class="form-group"><label>Calls / Follow-ups</label><input type="number" id="quickCalls" placeholder="0" /></div>
+          <div class="form-group"><label>Payments (₦)</label><input type="number" id="quickPaymentVal" placeholder="0" /></div>
+        </div>
+        <button class="btn" style="min-height: 40px; font-size: 0.85rem;" onclick="saveDailyDirectLog()">Save Daily Counters</button>
+      </div>
+
+      <div class="table-container">
+        <table id="sheet1Table"></table>
+      </div>
+
+      <button class="btn btn-excel" style="margin-top: 14px;" onclick="exportSheet1ToExcel()">Export Sheet 1 to Excel (.xls)</button>
+      <button class="btn" style="background: #333; color: #fff; margin-top: 8px;" onclick="exportAllToCSV()">Export All Logs Data (CSV)</button>
+    </div>
+  </div>
+
+  <!-- SHEET 2: QUOTATION REGISTER -->
+  <div id="view-sheet2" class="view-content">
+    <div class="card">
+      <div class="card-title">Log / Update Quotation (Sheet 2)</div>
+      <input type="hidden" id="qEditId" />
+      <div class="grid-2">
+        <div class="form-group"><label>Customer *</label><input type="text" id="qCustomer" placeholder="e.g. NLNG" /></div>
+        <div class="form-group"><label>Priority</label><select id="qPriority"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Enquiry No (PR) *</label><input type="text" id="qEnquiryNo" placeholder="PR7463" /></div>
+        <div class="form-group"><label>Enquiry Date</label><input type="date" id="qEnquiryDate" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Quote Deadline</label><input type="date" id="qDeadline" /></div>
+        <div class="form-group"><label>Quotation No</label><input type="text" id="qQuoteNo" placeholder="QT-2026-..." /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Quotation Date</label><input type="date" id="qQuoteDate" /></div>
+        <div class="form-group"><label>Quotation Value (₦)</label><input type="number" id="qValue" placeholder="0" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Sales Person</label><input type="text" id="qSalesPerson" /></div>
+        <div class="form-group"><label>Attended By</label><input type="text" id="qAttendedBy" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Status</label><select id="qStatus"><option value="Pending">Pending Quote</option><option value="Sent">Quote Sent (Awaiting PO)</option><option value="Won">Won (PO Received)</option><option value="Lost">Lost</option></select></div>
+        <div class="form-group"><label>Status Date</label><input type="date" id="qStatusDate" /></div>
+      </div>
+      <div class="form-group"><label>Description of Items / Units</label><textarea id="qDesc" rows="2" placeholder="Item description, PR specs, quantity"></textarea></div>
+      <button class="btn" onclick="saveQuotation()">Save Quotation Entry</button>
+    </div>
+    <div id="quotationList"></div>
+  </div>
+
+  <!-- SHEET 3: DAILY VISIT PLAN -->
+  <div id="view-sheet3" class="view-content">
+    <div class="card">
+      <div class="card-title">Log Field Visit Plan (Sheet 3)</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Visit Date *</label><input type="date" id="vDate" /></div>
+        <div class="form-group"><label>Customer Name *</label><input type="text" id="vCustomer" placeholder="Customer / Plant" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Location / Branch</label><input type="text" id="vLocation" placeholder="e.g. Trans Amadi, PHC" /></div>
+        <div class="form-group"><label>Transport Allowance (₦)</label><input type="number" id="vAllowance" placeholder="0" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Contact Person</label><input type="text" id="vContact" placeholder="Name" /></div>
+        <div class="form-group"><label>Mobile Number</label><input type="tel" id="vPhone" placeholder="Phone" /></div>
+      </div>
+      <div class="form-group"><label>Purpose of Visit</label><input type="text" id="vPurpose" placeholder="Technical audit, RFQ followup" /></div>
+      <button class="btn" onclick="saveVisit()">Save Visit Log</button>
+    </div>
+    <div id="visitList"></div>
+  </div>
+
+  <!-- SHEET 4: PO PERFORMANCE -->
+  <div id="view-sheet4" class="view-content">
+    <div class="card">
+      <div class="card-title">Log PO Performance (Sheet 4)</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Customer *</label><input type="text" id="poCustomer" placeholder="e.g. Nigerian Breweries" /></div>
+        <div class="form-group"><label>PO Number *</label><input type="text" id="poNumber" placeholder="4502758639" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>PO Value (₦) *</label><input type="number" id="poValue" placeholder="Total PO value" /></div>
+        <div class="form-group"><label>PO Date</label><input type="date" id="poDate" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Due Date / Delivery Deadline</label><input type="date" id="poDueDate" /></div>
+        <div class="form-group"><label>Delivery Status</label><select id="poDelivStatus"><option value="Pending">Pending Delivery</option><option value="Delivered">Delivered (Fulfillment Complete)</option></select></div>
+      </div>
+      <hr style="border:0; border-top:1px solid var(--card-border); margin:12px 0;" />
+      <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Invoice & Delivery Note Details</span>
+      <div class="grid-3" style="margin-top:8px;">
+        <div class="form-group"><label>Invoice Number</label><input type="text" id="poInvoiceNo" placeholder="INV-..." /></div>
+        <div class="form-group"><label>Invoice Value (₦)</label><input type="number" id="poInvoiceVal" placeholder="0" /></div>
+        <div class="form-group"><label>Delivery Date</label><input type="date" id="poDelivDate" /></div>
+      </div>
+      <button class="btn" onclick="savePO()">Save PO Record</button>
+    </div>
+    <div id="poList"></div>
+  </div>
+
+  <!-- SHEET 5: CHALLENGES -->
+  <div id="view-sheet5" class="view-content">
+    <div class="card">
+      <div class="card-title">Log Field Challenge (Sheet 5)</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Challenge Title *</label><input type="text" id="cTitle" placeholder="e.g. Long OEM lead time" /></div>
+        <div class="form-group"><label>Customer Involved</label><input type="text" id="cCustomer" placeholder="Customer name" /></div>
+      </div>
+      <div class="form-group"><label>Detailed Description & Root Cause</label><textarea id="cDesc" rows="2" placeholder="Explain the impact on quotation or delivery"></textarea></div>
+      <div class="form-group"><label>Solution Proposed / Action Needed</label><textarea id="cSolution" rows="2" placeholder="Actionable recommendations"></textarea></div>
+      <button class="btn" onclick="saveChallenge()">Save Challenge</button>
+    </div>
+    <div id="challengeList"></div>
+  </div>
+
+  <!-- SHEET 6: NEW ACCOUNTS -->
+  <div id="view-sheet6" class="view-content">
+    <div class="card">
+      <div class="card-title">Register New Account (Sheet 6)</div>
+      <div class="grid-2">
+        <div class="form-group"><label>Customer / Company *</label><input type="text" id="naName" placeholder="Company Name" /></div>
+        <div class="form-group"><label>Location / City</label><input type="text" id="naLocation" placeholder="e.g. Aba, PHC" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Contact Person</label><input type="text" id="naContact" placeholder="Contact Name" /></div>
+        <div class="form-group"><label>Designation / Role</label><input type="text" id="naRole" placeholder="Procurement Lead" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="naPhone" placeholder="080..." /></div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="naEmail" placeholder="client@company.com" /></div>
+      </div>
+      <button class="btn" onclick="saveNewAccount()">Save Account</button>
+    </div>
+    <div id="newAccountList"></div>
+  </div>
+
+  <nav>
+    <button class="nav-btn active" data-sheet="sheet1" onclick="switchView('sheet1')"><span>📊</span>Report</button>
+    <button class="nav-btn" data-sheet="sheet2" onclick="switchView('sheet2')"><span>📝</span>Quotes</button>
+    <button class="nav-btn" data-sheet="sheet3" onclick="switchView('sheet3')"><span>🚗</span>Visits</button>
+    <button class="nav-btn" data-sheet="sheet4" onclick="switchView('sheet4')"><span>📦</span>Orders</button>
+    <button class="nav-btn" data-sheet="sheet6" onclick="switchView('sheet6')"><span>🏢</span>Accounts</button>
+  </nav>
+
+  <script>
+    const DB_KEY = 'tekni_sales_suite_db';
+    let appData = { quotes: [], visits: [], pos: [], challenges: [], accounts: [], dailyLogs: {} };
+
+    function showToast(msg) { const toast = document.getElementById('toast'); toast.innerText = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2200); }
+    function loadDB() { try { const raw = localStorage.getItem(DB_KEY); if (raw) appData = Object.assign(appData, JSON.parse(raw)); } catch (e) {} }
+    function saveDB() { try { localStorage.setItem(DB_KEY, JSON.stringify(appData)); } catch (e) {} updateAlertBadge(); }
+    function getToday() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+
+    function initMonthSelector() {
+      const select = document.getElementById('reportMonth'); if (!select) return; select.innerHTML = '';
+      const now = new Date(), curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
+      const mNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      for (let y = curYear - 1; y <= curYear + 3; y++) {
+        for (let m = 1; m <= 12; m++) {
+          const opt = document.createElement('option');
+          opt.value = `${String(m).padStart(2, '0')}-${y}`; opt.textContent = `${mNames[m - 1]} ${y}`;
+          select.appendChild(opt);
+        }
+      }
+      const savedMonth = localStorage.getItem('activeReportMonth');
+      if (savedMonth && Array.from(select.options).some(o => o.value === savedMonth)) select.value = savedMonth;
+      else { const defaultMonth = String(curMonth).padStart(2, '0') + '-' + curYear; select.value = defaultMonth; localStorage.setItem('activeReportMonth', defaultMonth); }
+    }
+
+    function handleMonthChange() { localStorage.setItem('activeReportMonth', document.getElementById('reportMonth').value); renderSheet1(); }
+
+    function switchView(sheetId) {
+      document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.module-tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      document.getElementById('view-' + sheetId).classList.add('active');
+      const topTab = document.querySelector(`.module-tab-btn[data-sheet="${sheetId}"]`); if (topTab) topTab.classList.add('active');
+      const bottomTab = document.querySelector(`.nav-btn[data-sheet="${sheetId}"]`); if (bottomTab) bottomTab.classList.add('active');
+
+      if (sheetId === 'sheet1') renderSheet1(); if (sheetId === 'sheet2') renderSheet2(); if (sheetId === 'sheet3') renderSheet3();
+      if (sheetId === 'sheet4') renderSheet4(); if (sheetId === 'sheet5') renderSheet5(); if (sheetId === 'sheet6') renderSheet6();
+      window.scrollTo(0, 0);
+    }
+
+    function saveDailyDirectLog() {
+      const today = getToday();
+      if (!appData.dailyLogs[today]) appData.dailyLogs[today] = { calls: 0, paymentVal: 0 };
+      appData.dailyLogs[today].calls = parseInt(document.getElementById('quickCalls').value) || 0;
+      appData.dailyLogs[today].paymentVal = parseFloat(document.getElementById('quickPaymentVal').value) || 0;
+      saveDB(); renderSheet1(); showToast('Daily Metrics Saved!');
+    }
+
+    function renderSheet1() {
+      const table = document.getElementById('sheet1Table');
+      const [mStr, yStr] = document.getElementById('reportMonth').value.split('-');
+      const year = parseInt(yStr), month = parseInt(mStr), daysInMonth = new Date(year, month, 0).getDate();
+      const metrics = ["No of sales visit", "No of calls and follow ups made", "New account generated", "No of enquiries received", "No of quotations sent", "Quotations sent value (₦)", "No of orders received (PO)", "Value of orders received (PO Value)", "No of orders executed", "No of delivery note and invoice made", "Value of invoice made(orders received)", "No of payment (s) received", "Value of Payment (s) received"];
+      let matrix = Array(metrics.length).fill(0).map(() => Array(daysInMonth + 1).fill(0));
+
+      appData.visits.forEach(v => { const d = new Date(v.date); if (d.getMonth() + 1 === month && d.getFullYear() === year) matrix[0][d.getDate()]++; });
+      appData.accounts.forEach(a => { const d = new Date(a.date); if (d.getMonth() + 1 === month && d.getFullYear() === year) matrix[2][d.getDate()]++; });
+      appData.quotes.forEach(q => {
+        if (q.enquiryDate) { const d = new Date(q.enquiryDate); if (d.getMonth() + 1 === month && d.getFullYear() === year) matrix[3][d.getDate()]++; }
+        if (q.quoteDate) { const d = new Date(q.quoteDate); if (d.getMonth() + 1 === month && d.getFullYear() === year) { matrix[4][d.getDate()]++; matrix[5][d.getDate()] += q.value; } }
+      });
+      appData.pos.forEach(p => {
+        if (p.poDate) { const d = new Date(p.poDate); if (d.getMonth() + 1 === month && d.getFullYear() === year) { matrix[6][d.getDate()]++; matrix[7][d.getDate()] += p.poValue; } }
+        if (p.delivDate) { const d = new Date(p.delivDate); if (d.getMonth() + 1 === month && d.getFullYear() === year) matrix[8][d.getDate()]++; }
+        if (p.invoiceNo) { const d = new Date(p.poDate || p.delivDate || getToday()); if (d.getMonth() + 1 === month && d.getFullYear() === year) { matrix[9][d.getDate()]++; matrix[10][d.getDate()] += p.invoiceVal; } }
+      });
+      for (const [dateStr, val] of Object.entries(appData.dailyLogs)) {
+        const d = new Date(dateStr);
+        if (d.getMonth() + 1 === month && d.getFullYear() === year) {
+          matrix[1][d.getDate()] += val.calls || 0; if (val.paymentVal > 0) { matrix[11][d.getDate()]++; matrix[12][d.getDate()] += val.paymentVal; }
+        }
+      }
+
+      let html = '<thead><tr><th>Performance Metric</th>';
+      for (let day = 1; day <= daysInMonth; day++) html += `<th>D${day}</th>`;
+      html += '<th>TOTAL</th></tr></thead><tbody>';
+      metrics.forEach((metric, rowIdx) => {
+        let rowSum = 0; html += `<tr><td><strong>${metric}</strong></td>`;
+        for (let d = 1; d <= daysInMonth; d++) { const val = matrix[rowIdx][d]; rowSum += val; html += `<td>${val > 0 ? val.toLocaleString() : '-'}</td>`; }
+        html += `<td style="color:var(--accent); font-weight:bold;">${rowSum > 0 ? rowSum.toLocaleString() : 0}</td></tr>`;
+      });
+      table.innerHTML = html + '</tbody>';
+    }
+
+    function exportSheet1ToExcel() {
+      const tableHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Sales Report</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1">${document.getElementById('sheet1Table').innerHTML}</table></body></html>`;
+      const selectObj = document.getElementById('reportMonth');
+      const filename = `Sales_Report_${selectObj.options[selectObj.selectedIndex].text.replace(' ', '_')}.xls`;
+      const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      showToast('Excel Sheet Downloaded');
+    }
+
+    function saveQuotation() {
+      const customer = document.getElementById('qCustomer').value.trim(), enquiryNo = document.getElementById('qEnquiryNo').value.trim();
+      if (!customer || !enquiryNo) return showToast('⚠️ Enter Customer & PR');
+      const enqDate = document.getElementById('qEnquiryDate').value, quoteDate = document.getElementById('qQuoteDate').value;
+      let delay = 0; if (enqDate && quoteDate) delay = Math.max(0, Math.floor((new Date(quoteDate) - new Date(enqDate)) / 86400000));
+      const id = document.getElementById('qEditId').value || String(Date.now());
+      const item = { id: id, customer: customer, priority: document.getElementById('qPriority').value, enquiryNo: enquiryNo, enquiryDate: enqDate, deadline: document.getElementById('qDeadline').value, quoteNo: document.getElementById('qQuoteNo').value.trim(), quoteDate: quoteDate, delay: delay, value: parseFloat(document.getElementById('qValue').value) || 0, salesPerson: document.getElementById('qSalesPerson').value.trim(), attendedBy: document.getElementById('qAttendedBy').value.trim(), status: document.getElementById('qStatus').value, statusDate: document.getElementById('qStatusDate').value || getToday(), desc: document.getElementById('qDesc').value.trim() };
+      const idx = appData.quotes.findIndex(x => x.id === id); if (idx >= 0) appData.quotes[idx] = item; else appData.quotes.unshift(item);
+      saveDB(); renderSheet2(); showToast('Quotation Saved!');
+      ['qEditId', 'qCustomer', 'qEnquiryNo', 'qQuoteNo', 'qValue', 'qDesc'].forEach(id => document.getElementById(id).value = '');
+    }
+    
+    function renderSheet2() {
+      const container = document.getElementById('quotationList'); container.innerHTML = ''; const today = getToday();
+      appData.quotes.forEach(q => {
+        let pc = 'pill-yellow', pl = q.status;
+        if (q.status === 'Pending' && q.deadline && q.deadline <= today) { pc = 'pill-red'; pl = 'Quote Overdue'; }
+        else if (q.status === 'Sent' && q.quoteDate && Math.floor((new Date(today) - new Date(q.quoteDate)) / 86400000) >= 7) { pc = 'pill-yellow'; pl = 'Follow-Up Due'; }
+        else if (q.status === 'Won') { pc = 'pill-green'; }
+        container.innerHTML += `<div class="card"><div class="card-title"><span>${q.customer}</span><span class="pill ${pc}">${pl}</span></div><div style="font-size:0.8rem; color:var(--text-muted); margin:4px 0;">PR: <strong style="color:#fff;">${q.enquiryNo}</strong> | Val: <strong style="color:#10b981;">₦${q.value.toLocaleString()}</strong></div><div style="margin-top:8px;"><button class="btn-action" onclick="editQuote('${q.id}')">✏️ Edit</button><button class="btn-action" style="background:#333;" onclick="deleteQuote('${q.id}')">🗑️</button></div></div>`;
+      });
+    }
+
+    function editQuote(id) { const q = appData.quotes.find(x => x.id === id); if (!q) return; ['qEditId','qCustomer','qPriority','qEnquiryNo','qEnquiryDate','qDeadline','qQuoteNo','qQuoteDate','qValue','qSalesPerson','qAttendedBy','qStatus','qDesc'].forEach(k => document.getElementById(k).value = q[k.replace('q','').charAt(0).toLowerCase() + k.replace('q','').slice(1)] || q[k.replace('qEditId', 'id')] || ''); window.scrollTo(0, 0); }
+    function deleteQuote(id) { appData.quotes = appData.quotes.filter(x => x.id !== id); saveDB(); renderSheet2(); showToast('Deleted'); }
+
+    function saveVisit() {
+      const cust = document.getElementById('vCustomer').value.trim(), date = document.getElementById('vDate').value; if (!cust || !date) return showToast('⚠️ Enter Date & Customer');
+      appData.visits.unshift({ id: String(Date.now()), date: date, customer: cust, location: document.getElementById('vLocation').value.trim(), allowance: parseFloat(document.getElementById('vAllowance').value) || 0, contact: document.getElementById('vContact').value.trim(), phone: document.getElementById('vPhone').value.trim(), purpose: document.getElementById('vPurpose').value.trim() });
+      saveDB(); renderSheet3(); showToast('Visit Logged!'); document.getElementById('vCustomer').value = ''; document.getElementById('vPurpose').value = '';
+    }
+    function renderSheet3() {
+      const container = document.getElementById('visitList'); container.innerHTML = '';
+      appData.visits.forEach(v => container.innerHTML += `<div class="card"><div class="card-title"><span>${v.customer}</span><span class="pill pill-blue">${v.date}</span></div><div style="font-size:0.8rem; color:var(--text-muted); margin:4px 0;">Allowance: ₦${v.allowance.toLocaleString()} | Purpose: ${v.purpose || '-'}</div><div style="margin-top:6px;"><button class="btn-action" style="background:#333;" onclick="deleteVisit('${v.id}')">Delete</button></div></div>`);
+    }
+    function deleteVisit(id) { appData.visits = appData.visits.filter(x => x.id !== id); saveDB(); renderSheet3(); }
+
+    function savePO() {
+      const cust = document.getElementById('poCustomer').value.trim(), poNum = document.getElementById('poNumber').value.trim(); if (!cust || !poNum) return showToast('⚠️ Enter Customer & PO#');
+      appData.pos.unshift({ id: String(Date.now()), customer: cust, poNumber: poNum, poValue: parseFloat(document.getElementById('poValue').value) || 0, poDate: document.getElementById('poDate').value || getToday(), dueDate: document.getElementById('poDueDate').value, delivStatus: document.getElementById('poDelivStatus').value, invoiceNo: document.getElementById('poInvoiceNo').value.trim(), invoiceVal: parseFloat(document.getElementById('poInvoiceVal').value) || 0, delivDate: document.getElementById('poDelivDate').value });
+      saveDB(); renderSheet4(); showToast('PO Logged!'); document.getElementById('poCustomer').value = ''; document.getElementById('poNumber').value = ''; document.getElementById('poValue').value = '';
+    }
+    function renderSheet4() {
+      const container = document.getElementById('poList'); container.innerHTML = '';
+      appData.pos.forEach(p => container.innerHTML += `<div class="card"><div class="card-title"><span>${p.customer}</span><span class="pill ${p.delivStatus==='Delivered'?'pill-green':'pill-yellow'}">${p.delivStatus}</span></div><div style="font-size:0.8rem; color:var(--text-muted); margin:4px 0;">PO#: <strong style="color:#fff;">${p.poNumber}</strong> | Value: <strong style="color:#10b981;">₦${p.poValue.toLocaleString()}</strong></div><div style="margin-top:6px;"><button class="btn-action" style="background:#333;" onclick="deletePO('${p.id}')">Delete</button></div></div>`);
+    }
+    function deletePO(id) { appData.pos = appData.pos.filter(x => x.id !== id); saveDB(); renderSheet4(); }
+
+    function saveChallenge() {
+      const title = document.getElementById('cTitle').value.trim(); if (!title) return showToast('⚠️ Enter title');
+      appData.challenges.unshift({ id: String(Date.now()), title: title, date: getToday(), customer: document.getElementById('cCustomer').value.trim(), desc: document.getElementById('cDesc').value.trim(), solution: document.getElementById('cSolution').value.trim() });
+      saveDB(); renderSheet5(); showToast('Challenge Logged!'); document.getElementById('cTitle').value = ''; document.getElementById('cDesc').value = '';
+    }
+    function renderSheet5() { document.getElementById('challengeList').innerHTML = appData.challenges.map(c => `<div class="card"><div class="card-title"><span>${c.title}</span><span class="pill pill-red">${c.date}</span></div><div style="font-size:0.8rem; color:#cbd5e1; margin:4px 0;">Customer: ${c.customer || 'General'}</div><div style="font-size:0.8rem; color:var(--text-muted);">${c.desc}</div><div style="font-size:0.8rem; color:var(--accent); margin-top:4px;"><strong>Solution:</strong> ${c.solution || 'Under review'}</div></div>`).join(''); }
+
+    function saveNewAccount() {
+      const name = document.getElementById('naName').value.trim(); if (!name) return showToast('⚠️ Enter company name');
+      appData.accounts.unshift({ id: String(Date.now()), name: name, date: getToday(), location: document.getElementById('naLocation').value.trim(), contact: document.getElementById('naContact').value.trim(), role: document.getElementById('naRole').value.trim(), phone: document.getElementById('naPhone').value.trim(), email: document.getElementById('naEmail').value.trim() });
+      saveDB(); renderSheet6(); showToast('Account Added!'); document.getElementById('naName').value = ''; document.getElementById('naContact').value = '';
+    }
+    function renderSheet6() { document.getElementById('newAccountList').innerHTML = appData.accounts.map(a => `<div class="card"><div class="card-title"><span>${a.name}</span><span class="pill pill-blue">${a.location}</span></div><div style="font-size:0.8rem; color:var(--text-muted); margin:4px 0;">${a.contact} (${a.role})</div></div>`).join(''); }
+
+    function updateAlertBadge() {
+      let count = 0; const today = getToday();
+      appData.quotes.forEach(q => { if (q.status === 'Pending' && q.deadline && q.deadline <= today) count++; if (q.status === 'Sent' && q.quoteDate && Math.floor((new Date(today) - new Date(q.quoteDate)) / 86400000) >= 7) count++; });
+      document.getElementById('headerAlerts').innerText = `${count} Alert${count===1?'':'s'}`;
+    }
+
+    loadDB(); initMonthSelector(); document.getElementById('qEnquiryDate').value = getToday(); document.getElementById('vDate').value = getToday(); renderSheet1(); updateAlertBadge();
+  </script>
+</body>
+</html>
